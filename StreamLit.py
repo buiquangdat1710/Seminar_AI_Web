@@ -9,18 +9,16 @@ import streamlit.components.v1 as com
 com.iframe("https://lottie.host/embed/da10ef94-760b-4df4-b250-501989b789b7/XFuDbCwnGu.json")
 
 # Đường dẫn đến tệp credentials và thiết lập API
-SERVICE_ACCOUNT_FILE = 'certain-tangent-433616-q2-c4544b738291.json'
-SCOPES = ['https://www.googleapis.com/auth/drive']
-
-creds = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+creds = service_account.Credentials.from_service_account_info(
+    st.secrets["google_drive"]
+)
 
 service = build('drive', 'v3', credentials=creds)
 
-# Tên tệp Excel và ID của nó trên Google Drive (lưu trữ ở đây để sử dụng cho các lần cập nhật)
-FILE_ID = "13DDFOmbso5IDm0vH8ZLQRjfLwZqTK44_"  # Bạn có thể lưu trữ FILE_ID này trong một tệp hoặc biến môi trường
+# ID của file Excel trên Google Drive
+FILE_ID = "13DDFOmbso5IDm0vH8ZLQRjfLwZqTK44_"
 
-# Hàm để tải file từ Google Drive về
+# Hàm để tải file từ Google Drive
 def download_from_drive(file_id):
     request = service.files().get_media(fileId=file_id)
     file_data = io.BytesIO()
@@ -111,7 +109,7 @@ if menu == "Giới thiệu về Seminar":
     st.write("""
     Seminar "From Math to AI" do hai thầy PhD. Hoàng Phi Dũng và Assoc. PhD. Đỗ Xuân Chợ từ Học viện Công nghệ Bưu chính Viễn thông (PTIT) sáng lập và dẫn dắt. Seminar này đặc biệt dành cho sinh viên PTIT và hoàn toàn miễn phí, tạo điều kiện cho các bạn sinh viên tiếp cận kiến thức mà không phải lo lắng về chi phí.
              
-    Seminar tập trung sâu vào lý thuyết và toán học, giúp sinh viên hiểu rõ hơn về nền tảng lý thuyết quan trọng đằng sau các thuật toán và ứng dụng trong trí tuệ nhân tạo. Đây là một cơ hội tuyệt vời để các bạn sinh viên khám phá mối liên hệ giữa toán học và AI, mà không phải tập trung quá nhiều vào lập trình hay viết mã. Ngoài ra, sinh viên tham gia sẽ được cấp chứng chỉ sau khi hoàn thành chương trình, ghi nhận nỗ lực và thành tích trong quá trình tham gia và đăng ký. Đây là môi trường học tập chất lượng cao, nơi sinh viên có thể nâng cao kiến thức và kỹ năng cần thiết cho các lĩnh vực liên quan đến trí tuệ nhân tạo.
+    Seminar tập trung sâu vào lý thuyết và toán học, giúp sinh viên hiểu rõ hơn về nền tảng lý thuyết quan trọng đằng sau các thuật toán và ứng dụng trong trí tuệ nhân tạo. Đây là một cơ hội tuyệt vời để các bạn sinh viên khám phá mối liên hệ giữa toán học và AI, mà không phải tập trung quá nhiều vào lập trình hay viết mã. Ngoài ra, sinh viên tham gia sẽ được cấp chứng chỉ sau khi hoàn thành chương trình, ghi nhận nỗ lực và thành tích trong quá trình tham gia. Đây là môi trường học tập chất lượng cao, nơi sinh viên có thể nâng cao kiến thức và kỹ năng cần thiết cho các lĩnh vực liên quan đến trí tuệ nhân tạo.
     """)
 elif menu == "Buổi 1":
     st.markdown("<h2>Thông tin Seminar From Math to AI Buổi 1</h2>", unsafe_allow_html=True)
