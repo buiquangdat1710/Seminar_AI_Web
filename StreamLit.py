@@ -1,16 +1,70 @@
 import streamlit as st
 import pandas as pd
-import os
+import io
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
 import streamlit.components.v1 as com
+
 com.iframe("https://lottie.host/embed/da10ef94-760b-4df4-b250-501989b789b7/XFuDbCwnGu.json")
+
+# Đường dẫn đến tệp credentials và thiết lập API
+SERVICE_ACCOUNT_FILE = 'certain-tangent-433616-q2-c4544b738291.json'
+SCOPES = ['https://www.googleapis.com/auth/drive']
+
+creds = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+service = build('drive', 'v3', credentials=creds)
+
+# Tên tệp Excel và ID của nó trên Google Drive (lưu trữ ở đây để sử dụng cho các lần cập nhật)
+FILE_ID = "13DDFOmbso5IDm0vH8ZLQRjfLwZqTK44_"  # Bạn có thể lưu trữ FILE_ID này trong một tệp hoặc biến môi trường
+
+# Hàm để tải file từ Google Drive về
+def download_from_drive(file_id):
+    request = service.files().get_media(fileId=file_id)
+    file_data = io.BytesIO()
+    downloader = MediaIoBaseDownload(file_data, request)
+    done = False
+    while done is False:
+        status, done = downloader.next_chunk()
+    file_data.seek(0)
+    return file_data
+
+# Hàm để tải file lên Google Drive
+def upload_to_drive(file_id, file_data):
+    media = MediaIoBaseUpload(file_data, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    service.files().update(fileId=file_id, media_body=media).execute()
+    set_file_permissions(file_id)
+
+# Hàm để cập nhật file trên Google Drive
+def update_drive_file(file_id, new_data):
+    # Download existing file
+    existing_file_data = download_from_drive(file_id)
+    
+    # Load existing file into DataFrame
+    existing_df = pd.read_excel(existing_file_data)
+    
+    # Append new data
+    combined_df = pd.concat([existing_df, new_data], ignore_index=True)
+    
+    # Save combined DataFrame to a new BytesIO object
+    updated_file_data = io.BytesIO()
+    combined_df.to_excel(updated_file_data, index=False)
+    updated_file_data.seek(0)
+    
+    # Upload the updated file
+    upload_to_drive(file_id, updated_file_data)
+
+# Hàm để đặt quyền truy cập công khai cho file trên Google Drive
+def set_file_permissions(file_id):
+    permission = {
+        'type': 'anyone',
+        'role': 'reader'
+    }
+    service.permissions().create(fileId=file_id, body=permission).execute()
+
 # CSS để ẩn "Made with Streamlit"
-# st.markdown("""
-# <style>
-# .st-emotion-cache-yfhhig.ef3psqc5 {
-#     visibility: hidden;            
-# }
-# </style>
-# """, unsafe_allow_html=True)
 page_bg_img = '''
 <style>
 .stApp {
@@ -47,12 +101,19 @@ st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Tạo menu bên trái
 menu = st.sidebar.radio(
-    "Thông tin về các buổi Seminar",
-    ("Buổi 1", "Buổi 2", "Buổi 3", "Buổi 4", "Buổi 5", "Buổi 6")
+    "",
+    ("Giới thiệu về Seminar", "Buổi 1", "Buổi 2", "Buổi 3", "Buổi 4", "Buổi 5", "Buổi 6")
 )
 
 # Hiển thị nội dung theo lựa chọn của người dùng
-if menu == "Buổi 1":
+if menu == "Giới thiệu về Seminar":
+    st.markdown("<h2>Giới thiệu Seminar From Math to AI</h2>", unsafe_allow_html=True)
+    st.write("""
+    Seminar "From Math to AI" do hai thầy PhD. Hoàng Phi Dũng và Assoc. PhD. Đỗ Xuân Chợ từ Học viện Công nghệ Bưu chính Viễn thông (PTIT) sáng lập và dẫn dắt. Seminar này đặc biệt dành cho sinh viên PTIT và hoàn toàn miễn phí, tạo điều kiện cho các bạn sinh viên tiếp cận kiến thức mà không phải lo lắng về chi phí.
+             
+    Seminar tập trung sâu vào lý thuyết và toán học, giúp sinh viên hiểu rõ hơn về nền tảng lý thuyết quan trọng đằng sau các thuật toán và ứng dụng trong trí tuệ nhân tạo. Đây là một cơ hội tuyệt vời để các bạn sinh viên khám phá mối liên hệ giữa toán học và AI, mà không phải tập trung quá nhiều vào lập trình hay viết mã. Ngoài ra, sinh viên tham gia sẽ được cấp chứng chỉ sau khi hoàn thành chương trình, ghi nhận nỗ lực và thành tích trong quá trình tham gia và đăng ký. Đây là môi trường học tập chất lượng cao, nơi sinh viên có thể nâng cao kiến thức và kỹ năng cần thiết cho các lĩnh vực liên quan đến trí tuệ nhân tạo.
+    """)
+elif menu == "Buổi 1":
     st.markdown("<h2>Thông tin Seminar From Math to AI Buổi 1</h2>", unsafe_allow_html=True)
     st.write("""
     **Friday, 19/7/2024:**
@@ -107,7 +168,6 @@ elif menu == "Buổi 4":
 
     - 10.30 am: Discussion.
     """)
-
 elif menu == "Buổi 5":
     st.markdown("<h2>Thông tin Seminar From Math to AI Buổi 5</h2>", unsafe_allow_html=True)
     st.write("""
@@ -149,16 +209,7 @@ elif menu == "Buổi 6":
             'Thời gian chia sẻ': [time]
         }
         df = pd.DataFrame(data)
-
-        # Lưu thông tin vào file Excel
-        file_name = 'AI_Buoi6.xlsx'
         
-        # Kiểm tra xem file có tồn tại hay không, nếu có thì ghi thêm vào file
-        if os.path.exists(file_name):
-            df_existing = pd.read_excel(file_name)
-            df = pd.concat([df_existing, df], ignore_index=True)
-        
-        df.to_excel(file_name, index=False)
-
-        # Thông báo rằng dữ liệu đã được lưu
-        st.success('Thông tin của bạn đã được lưu thành công!')
+        # Cập nhật file trên Google Drive
+        update_drive_file(FILE_ID, df)
+        st.success(f'Thông tin của bạn đã được cập nhật thành công!')
