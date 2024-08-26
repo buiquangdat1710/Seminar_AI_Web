@@ -100,7 +100,7 @@ st.markdown(page_bg_img, unsafe_allow_html=True)
 # Tạo menu bên trái
 menu = st.sidebar.radio(
     "",
-    ("Giới thiệu về Seminar", "Buổi 1", "Buổi 2", "Buổi 3", "Buổi 4", "Buổi 5", "Buổi 6")
+    ("Giới thiệu về Seminar", "Buổi 1", "Buổi 2", "Buổi 3", "Buổi 4", "Buổi 5", "Buổi 6", "Buổi 7")
 )
 
 # Hiển thị nội dung theo lựa chọn của người dùng
@@ -180,8 +180,20 @@ elif menu == "Buổi 5":
     Abstract: Explore anomaly detection techniques to identify unusual data patterns and enhance system reliability.  
     """)
 
+
 elif menu == "Buổi 6":
-    st.markdown("<h2>Đăng Ký Seminar From Math to AI Buổi 6</h2>", unsafe_allow_html=True)
+    st.markdown("<h2>Thông tin Seminar From Math to AI Buổi 6</h2>", unsafe_allow_html=True)
+    st.write("""
+    **Thursday, 29/08/2024 - 9.00 am at 205-A2, PTIT**
+
+    - 9.00-9.20 am: **Nguyen Khac Gia Hoang** (D22 IT - PTIT): An Optimization Algorithm.
+
+    Abstract: Gradient descent - a popular optimization algorithm and variants of gradient descent.
+
+ 
+    """)
+elif menu == "Buổi 7":
+    st.markdown("<h2>Đăng Ký Seminar From Math to AI Buổi 7</h2>", unsafe_allow_html=True)
     
     # Form để thu thập thông tin cho Buổi 6
     with st.form(key='registration_form'):
